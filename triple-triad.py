@@ -21,7 +21,7 @@ class SeeD():
     def abolish(self, index):
         return self.data[index][0] >= 128
 
-    def stop(self, index):
+    def adopt(self, index):
         return self.data[index][0] < 64
 
 
@@ -69,12 +69,12 @@ def calculate_steps(dat, index, start, current_rules, carry_rules, queen):
     steps = []
     while seed < index - challenge:
         if index - seed >= challenge + play \
-                and not dat.stop(seed) \
+                and not dat.adopt(seed) \
                 and is_play_safe(dat, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
             seed += challenge + play
         elif index - seed >= challenge \
-                and not dat.stop(seed):
+                and not dat.adopt(seed):
             steps.append("challenge and decline")
             seed += challenge
         else:
