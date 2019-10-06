@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
 class SeeD():
-    @staticmethod
-    def load(filename):
-        with open(filename, 'rb') as dat_file:
-            return SeeD(dat_file.read())
-
     def __init__(self, data):
         self.data = data
 
@@ -38,6 +33,10 @@ class SeeD():
 
     def can_adopt(self, index):
         return self.data[index-1] < 64
+
+def load(filename):
+    with open(filename, 'rb') as dat_file:
+        return SeeD(dat_file.read())
 
 def find_abolish(seed, start, current_rules, carry_rules, target):
     spreadable_rules = []
