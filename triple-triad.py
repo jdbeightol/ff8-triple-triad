@@ -38,13 +38,13 @@ class SeeD():
         if self.data[index] >= 0:
             return "Open"
 
-    def abolish(self, index):
+    def can_abolish(self, index):
         return self.data[index] >= 128
 
-    def adopt(self, index):
+    def can_adopt(self, index):
         return self.data[index] < 64
 
-def find_abolish(dat, start, current_rules, carry_rules, target):
+def find_abolish(seed, start, current_rules, carry_rules, target):
     spreadable_rules = []
     for r in carry_rules:
         if r not in current_rules:
@@ -53,15 +53,15 @@ def find_abolish(dat, start, current_rules, carry_rules, target):
         return 0, "cannot mix rules"
     if target not in current_rules:
         return 0 , "target rule does not exist in current rules"
-    for i in range(start, len(dat) - 4):
-        if dat.get_rule(i+2) == target and dat.abolish(i+3):
-            if len(carry_rules) == 0 or dat.get_rule(i) not in spreadable_rules \
-                    and dat.get_rule(i+1) not in spreadable_rules \
-                    and dat.get_rule(i+2) not in spreadable_rules:
+    for i in range(start, len(seed) - 2):
+        if seed.get_rule(i+2) == target and seed.can_abolish(i+3):
+            if len(carry_rules) == 0 or seed.get_rule(i) not in spreadable_rules \
+                    and seed.get_rule(i+1) not in spreadable_rules \
+                    and seed.get_rule(i+2) not in spreadable_rules:
                 return i, None
     return 0, "exhausted seed candidates"
 
-def find_spread(dat, start, current_rules, carry_rules, target):
+def find_spread(seed, start, current_rules, carry_rules, target):
     spreadable_rules = []
     for r in carry_rules:
         if r not in current_rules:
@@ -70,8 +70,8 @@ def find_spread(dat, start, current_rules, carry_rules, target):
         return 0, "cannot mix rules"
     if target not in spreadable_rules:
         return 0, "target rule does not exist in spreadable rules"
-    for i in range(start, len(dat) - 1):
-        candidate_rules = [dat.get_rule(i), dat.get_rule(i+1), dat.get_rule(i+2)]
+    for i in range(start, len(seed) - 2):
+        candidate_rules = [seed.get_rule(i), seed.get_rule(i+1), seed.get_rule(i+2)]
         if target in candidate_rules:
             for r in spreadable_rules:
                 if r in candidate_rules and r != target:
@@ -80,7 +80,7 @@ def find_spread(dat, start, current_rules, carry_rules, target):
                 return i, None
     return 0, "exhausted seed candidates"
 
-def calculate_steps(dat, index, start, current_rules, carry_rules, queen, q_challenge):
+def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_challenge):
     # Assume we will always be challenging + mixing rules.  Add 1 for queen.
     challenge = 2
     if queen:
@@ -88,34 +88,34 @@ def calculate_steps(dat, index, start, current_rules, carry_rules, queen, q_chal
     if q_challenge:
         challenge += 1
     play = 4
-    seed = start
+    cursor = start
     steps = []
-    while seed < index - challenge:
-        if index - seed >= challenge + play \
-                and not dat.adopt(seed) \
-                and is_play_safe(dat, index, current_rules, carry_rules, queen):
+    while cursor < index - challenge:
+        if index - cursor >= challenge + play \
+                and not seed.can_adopt(cursor) \
+                and is_play_safe(seed, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
-            seed += challenge + play
-        elif index - seed >= challenge \
-                and not dat.adopt(seed):
+            cursor += challenge + play
+        elif index - cursor >= challenge \
+                and not seed.can_adopt(cursor):
             steps.append("challenge and decline")
-            seed += challenge
+            cursor += challenge
         else:
             steps.append("read a magazine or draw a spell")
-            seed += 1
+            cursor += 1
     steps.append("challenge and play")
     return steps
 
-def is_play_safe(dat, index, current_rules, carry_rules, queen):
+def is_play_safe(seed, index, current_rules, carry_rules, queen):
     scary_rules = []
     for r in carry_rules:
         if r not in current_rules:
             scary_rules.append(r)
-    d = [dat.get_rule(index), dat.get_rule(index+1), dat.get_rule(index+2)]
+    d = [seed.get_rule(index), seed.get_rule(index+1), seed.get_rule(index+2)]
     for s in scary_rules:
         if s in d:
             return False
-    if dat.get_rule(index+2) in current_rules:
+    if seed.get_rule(index+2) in current_rules:
         return False
     return True
 
@@ -155,7 +155,7 @@ args = a.parse_args()
 if args.challenging_queen:
     args.queen_in_region = True
 
-dat = SeeD.load('random.dat')
+seed = SeeD.load('random.dat')
 
 print("Given:")
 print("\tThe following rules in the target region:")
@@ -183,16 +183,16 @@ print("\n\tThe queen is%s in the target region.\n" % ("" if args.queen_in_region
 idx = 0
 reason = None
 if args.action == 'abolish':
-    idx, reason = find_abolish(dat, args.seed, args.rules, args.carry, args.target) 
+    idx, reason = find_abolish(seed, args.seed, args.rules, args.carry, args.target) 
 elif args.action == 'spread':
-    idx, reason = find_spread(dat, args.seed, args.rules, args.carry, args.target)
+    idx, reason = find_spread(seed, args.seed, args.rules, args.carry, args.target)
 
 if reason is not None:
     print("No opportunitiy to %s %s could be found." % (args.action, args.target))
     print("Reason: %s" % reason)
 else:
     print("An opportunity to %s %s exists at seed %d." % (args.action, args.target, idx))
-    steps = compress_list(calculate_steps(dat, idx, args.seed, args.rules, args.carry, args.queen_in_region, args.challenging_queen))
+    steps = compress_list(calculate_steps(seed, idx, args.seed, args.rules, args.carry, args.queen_in_region, args.challenging_queen))
     print("Steps to achieve:")
     for step in steps:
         print("\t- %s" % step)
