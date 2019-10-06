@@ -61,9 +61,13 @@ def find_spread(dat, start, current_rules, carry_rules, target):
                 return i, None
     return 0, "exhausted seed candidates"
 
-def calculate_steps(dat, index, start, current_rules, carry_rules, queen):
+def calculate_steps(dat, index, start, current_rules, carry_rules, queen, q_challenge):
     # Assume we will always be challenging + mixing rules.  Add 1 for queen.
-    challenge = 3 if queen else 2
+    challenge = 2
+    if queen:
+        challenge += 1
+    if q_challenge:
+        challenge += 1
     play = 4
     seed = start
     steps = []
@@ -96,7 +100,6 @@ def is_play_safe(dat, index, current_rules, carry_rules, queen):
         return False
     return True
 
-
 def compress_list(l):
     cur = None
     cnt = 0
@@ -124,7 +127,7 @@ a.add_argument('action', choices=['spread', 'abolish'], help="action")
 a.add_argument('target', help="target of action")
 a.add_argument('--rules', '-r', nargs='+', default=[], help="current rules")
 a.add_argument('--carry', '-c', nargs='+', default=[], help="carry rules")
-a.add_argument('--seed', '-s', type=int, default=0, help="start seed")
+a.add_argument('--seed', '-s', type=int, default=1, help="start seed")
 a.add_argument('--queen-in-region', '-q', action="store_true", help="if queen is present in region")
 a.add_argument('--challenging-queen', '-x', action="store_true", help="if you are challenging the queen. implies queen is in the region")
 args = a.parse_args()
@@ -135,9 +138,8 @@ if args.challenging_queen:
 
 dat = None
 
-with open('random.dat', 'rb') as dat_file:
-    dat = random.Int8(dat_file.read())
-
+with open('seed.dat', 'r') as csv_file:
+    dat = SeeD(csv.reader(csv_file))
 print("Given:")
 print("\tThe following rules in the target region:")
 
