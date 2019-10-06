@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import seed
+import rand
+import rules
 
 
 a = argparse.ArgumentParser(description="Triple Triad RNG manipulation utility.")
@@ -21,7 +22,7 @@ if args.challenging_queen:
     args.queen_in_region = True
 
 # Load the seed data from a file.
-seed_data = seed.load(args.random_file)
+seed_data = rand.load(args.random_file)
 
 if args.verbose:
     print("Loaded %d seeds.\n" % len(seed_data))
@@ -52,16 +53,16 @@ if args.verbose:
 idx = 0
 reason = None
 if args.action == 'abolish':
-    idx, reason = seed.find_abolish(seed_data, args.start, args.rules, args.carry, args.target) 
+    idx, reason = rules.find_abolish(seed_data, args.start, args.rules, args.carry, args.target) 
 elif args.action == 'spread':
-    idx, reason = seed.find_spread(seed_data, args.start, args.rules, args.carry, args.target)
+    idx, reason = rules.find_spread(seed_data, args.start, args.rules, args.carry, args.target)
 
 if reason is not None:
     print("No opportunitiy to %s %s could be found." % (args.action, args.target))
     if args.verbose:
         print("Reason: %s" % reason)
 else:
-    steps = seed.compress_list(seed.calculate_steps(seed_data, idx, args.start, args.rules, args.carry, args.queen_in_region, args.challenging_queen))
+    steps = rules.compress_list(rules.calculate_steps(seed_data, idx, args.start, args.rules, args.carry, args.queen_in_region, args.challenging_queen))
 
     if args.verbose:
         print("An opportunity to %s %s exists at seed %d." % (args.action, args.target, idx))

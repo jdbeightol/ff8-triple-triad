@@ -1,42 +1,31 @@
 #!/usr/bin/env python3
 
-class SeeD():
-    def __init__(self, data):
-        self.data = data
+def get_rule(value):
+    if value >= 256:
+        return None
+    if value >= 224:
+        return "Elemental"
+    if value >= 192:
+        return "Same Wall"
+    if value >= 160:
+        return "Open"
+    if value >= 128:
+        return "Sudden Death"
+    if value >= 96:
+        return "Random"
+    if value >= 64:
+        return "Plus"
+    if value >= 32:
+        return "Same"
+    if value >= 0:
+        return "Open"
+    return None
 
-    def __len__(self):
-        return len(self.data)
+def can_abolish(value):
+    return value >= 128
 
-    def __getitem__(self, index):
-        return self.data[index-1]
-
-    def get_rule(self, index):
-        if self.data[index-1] >= 224:
-            return "Elemental"
-        if self.data[index-1] >= 192:
-            return "Same Wall"
-        if self.data[index-1] >= 160:
-            return "Open"
-        if self.data[index-1] >= 128:
-            return "Sudden Death"
-        if self.data[index-1] >= 96:
-            return "Random"
-        if self.data[index-1] >= 64:
-            return "Plus"
-        if self.data[index-1] >= 32:
-            return "Same"
-        if self.data[index-1] >= 0:
-            return "Open"
-
-    def can_abolish(self, index):
-        return self.data[index-1] >= 128
-
-    def can_adopt(self, index):
-        return self.data[index-1] < 64
-
-def load(filename):
-    with open(filename, 'rb') as dat_file:
-        return SeeD(dat_file.read())
+def can_adopt(value):
+    return value < 64
 
 def find_abolish(seed, start, current_rules, carry_rules, target):
     spreadable_rules = get_spreadable_rules(current_rules, carry_rules)
@@ -45,10 +34,10 @@ def find_abolish(seed, start, current_rules, carry_rules, target):
     if target not in current_rules:
         return 0 , "target rule does not exist in current rules"
     for i in range(start, len(seed) - 2):
-        if seed.get_rule(i+2) == target and seed.can_abolish(i+3):
-            if len(carry_rules) == 0 or seed.get_rule(i) not in spreadable_rules \
-                    and seed.get_rule(i+1) not in spreadable_rules \
-                    and seed.get_rule(i+2) not in spreadable_rules:
+        if get_rule(seed[i+2]) == target and can_abolish(seed[i+3]):
+            if len(carry_rules) == 0 or get_rule(seed[i]) not in spreadable_rules \
+                    and get_rule(seed[i+1]) not in spreadable_rules \
+                    and get_rule(seed[i+2]) not in spreadable_rules:
                 return i, None
     return 0, "exhausted seed candidates"
 
@@ -59,7 +48,7 @@ def find_spread(seed, start, current_rules, carry_rules, target):
     if target not in spreadable_rules:
         return 0, "target rule does not exist in spreadable rules"
     for i in range(start, len(seed) - 2):
-        candidate_rules = [seed.get_rule(i), seed.get_rule(i+1), seed.get_rule(i+2)]
+        candidate_rules = [get_rule(seed[i]), get_rule(seed[i+1]), get_rule(seed[i+2])]
         if target in candidate_rules:
             for r in spreadable_rules:
                 if r in candidate_rules and r != target:
@@ -90,7 +79,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         # See section 3.2.10 of https://pastebin.com/raw/5jv5AtcC for more information.
         if play_as_step \
                 and index - step - reserve >= challenge + play \
-                and not seed.can_adopt(step) \
+                and not can_adopt(seed[step]) \
                 and is_play_safe(seed, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
             step += challenge + play
@@ -98,7 +87,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         # Excluding play as a step, challenging is the next highest cost action.  We want to prefer it when possible, but only
         # if it won't put us past the last play attempt.
         elif index - step - reserve >= challenge \
-                and not seed.can_adopt(step):
+                and not can_adopt(seed[step]):
             steps.append("challenge and decline")
             step += challenge
 
@@ -110,7 +99,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     # If the last step falls on a rule adoption seed, there is risk that the player might not ask to mix rules anymore.
     # Technically, this needs to happen twice and the algorithm avoids all adoption steps, so this should always be safe
     # when starting from Seed 1.
-    if seed.can_adopt(step) \
+    if can_adopt(seed[step]) \
             or index - step != reserve:
         steps.append("(challenge and play)")
     else:
@@ -121,14 +110,14 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
 def is_play_safe(seed, index, current_rules, carry_rules, queen):
     spreadable_rules = get_spreadable_rules(current_rules, carry_rules)
 
-    d = [seed.get_rule(index), seed.get_rule(index+1), seed.get_rule(index+2)]
+    d = [get_rule(seed[index]), get_rule(seed[index+1]), get_rule(seed[index+2])]
     # Check that a carried rule will not spread during this step.
     for s in spreadable_rules:
         if s in d:
             return False
 
     # Check that a rule in the region won't be abolished.
-    if seed.get_rule(index+2) in current_rules and seed.can_abolish(index+3):
+    if get_rule(seed[index+2]) in current_rules and can_abolish(seed[index+3]):
         return False
 
     return True
