@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import csv
-import math
 
 
 class SeeD():
