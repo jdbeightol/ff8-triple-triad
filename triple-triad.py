@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import csv
@@ -6,8 +6,15 @@ import math
 
 
 class SeeD():
+    @staticmethod
+    def load(filename):
+        # with open(filename, 'r') as csv_file:
+        #     return SeeD(csv.reader(csv_file))
+        with open(filename, 'rb') as dat_file:
+            return SeeD(dat_file.read())
+
     def __init__(self, data):
-        self.data = {int(d[0]): [int(d[1]), d[2]] for d in data}
+        self.data = data
 
     def __len__(self):
         return len(self.data)
@@ -16,14 +23,28 @@ class SeeD():
         return self.data[index]
 
     def get_rule(self, index):
-        return self.data[index][1]
+        if self.data[index] >= 224:
+            return "Elemental"
+        if self.data[index] >= 192:
+            return "Same Wall"
+        if self.data[index] >= 160:
+            return "Open"
+        if self.data[index] >= 128:
+            return "Sudden Death"
+        if self.data[index] >= 96:
+            return "Random"
+        if self.data[index] >= 64:
+            return "Plus"
+        if self.data[index] >= 32:
+            return "Same"
+        if self.data[index] >= 0:
+            return "Open"
 
     def abolish(self, index):
-        return self.data[index][0] >= 128
+        return self.data[index] >= 128
 
     def adopt(self, index):
-        return self.data[index][0] < 64
-
+        return self.data[index] < 64
 
 def find_abolish(dat, start, current_rules, carry_rules, target):
     spreadable_rules = []
@@ -127,7 +148,7 @@ a.add_argument('action', choices=['spread', 'abolish'], help="action")
 a.add_argument('target', help="target of action")
 a.add_argument('--rules', '-r', nargs='+', default=[], help="current rules")
 a.add_argument('--carry', '-c', nargs='+', default=[], help="carry rules")
-a.add_argument('--seed', '-s', type=int, default=1, help="start seed")
+a.add_argument('--seed', '-s', type=int, default=0, help="start seed")
 a.add_argument('--queen-in-region', '-q', action="store_true", help="if queen is present in region")
 a.add_argument('--challenging-queen', '-x', action="store_true", help="if you are challenging the queen. implies queen is in the region")
 args = a.parse_args()
@@ -136,10 +157,8 @@ args = a.parse_args()
 if args.challenging_queen:
     args.queen_in_region = True
 
-dat = None
+dat = SeeD.load('random.dat')
 
-with open('seed.dat', 'r') as csv_file:
-    dat = SeeD(csv.reader(csv_file))
 print("Given:")
 print("\tThe following rules in the target region:")
 
