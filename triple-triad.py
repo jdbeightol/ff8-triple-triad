@@ -8,8 +8,6 @@ import math
 class SeeD():
     @staticmethod
     def load(filename):
-        # with open(filename, 'r') as csv_file:
-        #     return SeeD(csv.reader(csv_file))
         with open(filename, 'rb') as dat_file:
             return SeeD(dat_file.read())
 
