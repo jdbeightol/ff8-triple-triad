@@ -18,31 +18,31 @@ class SeeD():
         return len(self.data)
 
     def __getitem__(self, index):
-        return self.data[index]
+        return self.data[index-1]
 
     def get_rule(self, index):
-        if self.data[index] >= 224:
+        if self.data[index-1] >= 224:
             return "Elemental"
-        if self.data[index] >= 192:
+        if self.data[index-1] >= 192:
             return "Same Wall"
-        if self.data[index] >= 160:
+        if self.data[index-1] >= 160:
             return "Open"
-        if self.data[index] >= 128:
+        if self.data[index-1] >= 128:
             return "Sudden Death"
-        if self.data[index] >= 96:
+        if self.data[index-1] >= 96:
             return "Random"
-        if self.data[index] >= 64:
+        if self.data[index-1] >= 64:
             return "Plus"
-        if self.data[index] >= 32:
+        if self.data[index-1] >= 32:
             return "Same"
-        if self.data[index] >= 0:
+        if self.data[index-1] >= 0:
             return "Open"
 
     def can_abolish(self, index):
-        return self.data[index] >= 128
+        return self.data[index-1] >= 128
 
     def can_adopt(self, index):
-        return self.data[index] < 64
+        return self.data[index-1] < 64
 
 def find_abolish(seed, start, current_rules, carry_rules, target):
     spreadable_rules = []
@@ -88,21 +88,21 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     if q_challenge:
         challenge += 1
     play = 4
-    cursor = start
+    step = start
     steps = []
-    while cursor < index - challenge:
-        if index - cursor >= challenge + play \
-                and not seed.can_adopt(cursor) \
+    while step < index - challenge:
+        if index - step >= challenge + play \
+                and not seed.can_adopt(step) \
                 and is_play_safe(seed, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
-            cursor += challenge + play
-        elif index - cursor >= challenge \
-                and not seed.can_adopt(cursor):
+            step += challenge + play
+        elif index - step >= challenge \
+                and not seed.can_adopt(step):
             steps.append("challenge and decline")
-            cursor += challenge
+            step += challenge
         else:
             steps.append("read a magazine or draw a spell")
-            cursor += 1
+            step += 1
     steps.append("challenge and play")
     return steps
 
@@ -146,7 +146,7 @@ a.add_argument('action', choices=['spread', 'abolish'], help="action")
 a.add_argument('target', help="target of action")
 a.add_argument('--rules', '-r', nargs='+', default=[], help="current rules")
 a.add_argument('--carry', '-c', nargs='+', default=[], help="carry rules")
-a.add_argument('--seed', '-s', type=int, default=0, help="start seed")
+a.add_argument('--seed', '-s', type=int, default=1, help="start seed")
 a.add_argument('--queen-in-region', '-q', action="store_true", help="if queen is present in region")
 a.add_argument('--challenging-queen', '-x', action="store_true", help="if you are challenging the queen. implies queen is in the region")
 args = a.parse_args()
