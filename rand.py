@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-class RandomNumberGenerator():
+class SeeD():
     def __init__(self, data):
         self.data = data
-        self.cursor = 0
 
     def __iter__(self):
         return self.data.__iter__()
@@ -13,6 +12,11 @@ class RandomNumberGenerator():
 
     def __getitem__(self, index):
         return self.data[index-1]
+
+class RandomNumberGenerator():
+    def __init__(self, seed):
+        self.seed = seed
+        self.cursor = 1
 
     def getRandom(self):
         return next()
@@ -27,4 +31,4 @@ class RandomNumberGenerator():
 
 def load(filename):
     with open(filename, 'rb') as dat_file:
-        return RandomNumberGenerator(dat_file.read())
+        return SeeD(dat_file.read())
