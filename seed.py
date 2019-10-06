@@ -82,7 +82,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     if q_challenge:
         challenge += 1
     play = 4
-    step = start
+    step = start - 1
     steps = []
     while step < index - challenge:
         if index - step >= challenge + play \
