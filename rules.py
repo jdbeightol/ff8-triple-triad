@@ -70,7 +70,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     play = 4
     # The reserve cost is the required amount to save prior to the last play step.
     reserve = challenge
-    step = start - 1
+    step = start
     steps = []
     # Ideally, we want to maximize the number of high-cost steps when available.  Since challenging can sometimes lead to the 
     # end of mixing, order is important for these steps.  This algorithm could result in frequent 
@@ -91,7 +91,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
             steps.append("challenge and decline")
             step += challenge
 
-        # If we can't play or we can't challenge, we must attempt to draw a spell or 
+        # If we can't play or challenge, we must attempt to draw a spell or read a magazine.
         else:
             steps.append("read a magazine or draw a spell")
             step += 1
