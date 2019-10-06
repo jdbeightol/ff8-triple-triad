@@ -33,7 +33,7 @@ def find_abolish(seed, start, current_rules, carry_rules, target):
         return 0, "cannot mix rules"
     if target not in current_rules:
         return 0 , "target rule does not exist in current rules"
-    for i in range(start, len(seed) - 2):
+    for i in range(start + 2, len(seed) - 2):
         if get_rule(seed[i+2]) == target and can_abolish(seed[i+3]):
             if len(carry_rules) == 0 or get_rule(seed[i]) not in spreadable_rules \
                     and get_rule(seed[i+1]) not in spreadable_rules \
@@ -47,7 +47,7 @@ def find_spread(seed, start, current_rules, carry_rules, target):
         return 0, "cannot mix rules"
     if target not in spreadable_rules:
         return 0, "target rule does not exist in spreadable rules"
-    for i in range(start, len(seed) - 2):
+    for i in range(start + 2, len(seed) - 2):
         candidate_rules = [get_rule(seed[i]), get_rule(seed[i+1]), get_rule(seed[i+2])]
         if target in candidate_rules:
             for r in spreadable_rules:
