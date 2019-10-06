@@ -7,4 +7,4 @@
 ./triple-triad.py spread Open -c Open -r Same -x
 ./triple-triad.py abolish Same -c Open -r Same -q
 ./triple-triad.py abolish Same -c Open -r Same
-./triple-triad.py spread Open -c Open -r Same
+./triple-triad.py spread Open -c Open -r Same -v

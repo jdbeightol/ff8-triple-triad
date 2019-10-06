@@ -77,15 +77,15 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         challenge += 1
     if q_challenge:
         challenge += 1
-    # The play cost is 4.  3 for picking rules and sometimes a 4th for checking if the rule can be abolished when nothing happens.
+    # The play cost is 4.  3 for picking rules and a 4th for checking if the rule can be abolished.
     play = 4
-    # The reserve cost is the required amount to save for the last play step.
-    reserve = challenge + play - 1
+    # The reserve cost is the required amount to save prior to the last play step.
+    reserve = challenge
     step = start - 1
     steps = []
     # Ideally, we want to maximize the number of high-cost steps when available.  Since challenging can sometimes lead to the 
     # end of mixing, order is important for these steps.  This algorithm could result in frequent 
-    while index - step > challenge + play - 1:
+    while index - step > reserve:
         # Playing as a step is experimental.  There are some extra variables to consider that change the number of getRandom checks.
         # See section 3.2.10 of https://pastebin.com/raw/5jv5AtcC for more information.
         if play_as_step \
@@ -110,7 +110,8 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     # If the last step falls on a rule adoption seed, there is risk that the player might not ask to mix rules anymore.
     # Technically, this needs to happen twice and the algorithm avoids all adoption steps, so this should always be safe
     # when starting from Seed 1.
-    if seed.can_adopt(step):
+    if seed.can_adopt(step) \
+            or index - step != reserve:
         steps.append("(challenge and play)")
     else:
         steps.append("challenge and play")
