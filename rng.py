@@ -37,7 +37,7 @@ def preprocess(value):
         r = value.split('-')
         return preprocess(r[0]) - preprocess(r[1])
     if value == '':
-        return 0
+        return 1
     return int(value)
 
 def process_ranges(func, values):
@@ -60,7 +60,7 @@ def process_ranges(func, values):
 
 a = argparse.ArgumentParser(description='RNG inspection utility.')
 a.add_argument('command', choices=['print', 'get'], help='command')
-a.add_argument('ranges', nargs='+', help='ranges of values relevant to the action (use ":" to specify inclusive ranges)')
+a.add_argument('ranges', nargs='+', help='ranges of values relevant to the action. use ":" to specify inclusive ranges. seed index starts at 1')
 a.add_argument('--random-file', '-f', default='random.dat', help='filename of random data to load')
 args = a.parse_args()
 
