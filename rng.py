@@ -30,13 +30,13 @@ def get_magazine(value):
     return None
 
 def preprocess(value):
-    if '+' in value:
-        r = value.split('+')
-        return preprocess(r[0]) + preprocess(r[1])
-    if '-' in value:
-        r = value.split('-')
-        return preprocess(r[0]) - preprocess(r[1])
-    if value == '':
+    a = value.find('+')
+    s = value.find('-')
+    if a != -1:
+        return preprocess(value[:a]) + preprocess(value[a+1:])
+    elif s != -1:
+        return preprocess(value[:s]) - preprocess(value[s+1:])
+    elif value == '':
         return 1
     return int(value)
 
