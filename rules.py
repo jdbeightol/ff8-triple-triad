@@ -22,7 +22,7 @@ def get_rule(value):
     return None
 
 def can_abolish(value):
-    return value >= 128
+    return value < 128
 
 def can_adopt(value):
     return value < 64
