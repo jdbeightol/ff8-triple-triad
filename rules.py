@@ -70,37 +70,37 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     play = 4
     # The reserve cost is the required amount to save prior to the last play step.
     reserve = challenge
-    step = start
+    cursor = start
     steps = []
     # Ideally, we want to maximize the number of high-cost steps when available.  Since challenging can sometimes lead to the 
     # end of mixing, order is important for these steps.  This algorithm could result in frequent 
-    while index - step > reserve:
+    while index - cursor > reserve:
         # Playing as a step is experimental.  There are some extra variables to consider that change the number of getRandom checks.
         # See section 3.2.10 of https://pastebin.com/raw/5jv5AtcC for more information.
         if play_as_step \
-                and index - step - reserve >= challenge + play \
-                and not can_adopt(seed[step]) \
+                and index - cursor - reserve >= challenge + play \
+                and not can_adopt(seed[cursor]) \
                 and is_play_safe(seed, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
-            step += challenge + play
+            cursor += challenge + play
 
         # Excluding play as a step, challenging is the next highest cost action.  We want to prefer it when possible, but only
         # if it won't put us past the last play attempt.
-        elif index - step - reserve >= challenge \
-                and not can_adopt(seed[step]):
+        elif index - cursor - reserve >= challenge \
+                and not can_adopt(seed[cursor]):
             steps.append("challenge and decline")
-            step += challenge
+            cursor += challenge
 
         # If we can't play or challenge, we must attempt to draw a spell or read a magazine.
         else:
             steps.append("read a magazine or draw a spell")
-            step += 1
+            cursor += 1
 
     # If the last step falls on a rule adoption seed, there is risk that the player might not ask to mix rules anymore.
     # Technically, this needs to happen twice and the algorithm avoids all adoption steps, so this should always be safe
     # when starting from Seed 1.
-    if can_adopt(seed[step]) \
-            or index - step != reserve:
+    if can_adopt(seed[cursor]) \
+            or index - cursor != reserve:
         steps.append("(challenge and play)")
     else:
         steps.append("challenge and play")
