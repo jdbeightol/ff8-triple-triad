@@ -27,13 +27,16 @@ def can_abolish(value):
 def can_adopt(value):
     return value < 64
 
+def can_mix(value):
+    return value < 255
+
 def find_abolish(seed, start, current_rules, carry_rules, target):
     spreadable_rules = get_spreadable_rules(current_rules, carry_rules)
     if len(spreadable_rules) == 0:
         return 0, "cannot mix rules"
     if target not in current_rules:
         return 0 , "target rule does not exist in current rules"
-    for i in range(start + 2, len(seed) - 2):
+    for i in range(start + 3, len(seed) - 2):
         if get_rule(seed[i+2]) == target and can_abolish(seed[i+3]):
             if len(carry_rules) == 0 or get_rule(seed[i]) not in spreadable_rules \
                     and get_rule(seed[i+1]) not in spreadable_rules \
@@ -47,7 +50,7 @@ def find_spread(seed, start, current_rules, carry_rules, target):
         return 0, "cannot mix rules"
     if target not in spreadable_rules:
         return 0, "target rule does not exist in spreadable rules"
-    for i in range(start + 2, len(seed) - 2):
+    for i in range(start + 3, len(seed) - 2):
         candidate_rules = [get_rule(seed[i]), get_rule(seed[i+1]), get_rule(seed[i+2])]
         if target in candidate_rules:
             for r in spreadable_rules:
@@ -66,7 +69,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         challenge += 1
     if q_challenge:
         challenge += 1
-    # The play cost is 4.  3 for picking rules and a 4th for checking if the rule can be abolished.
+    # The play cost is 4.  3 for picking rules and a 4th for checking if the rule can be abolished. TODO -- not true
     play = 4
     # The reserve cost is the required amount to save prior to the last play step.
     reserve = challenge
@@ -80,6 +83,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         if play_as_step \
                 and index - cursor - reserve >= challenge + play \
                 and not can_adopt(seed[cursor]) \
+                and can_mix(seed[cursor+1]) \
                 and is_play_safe(seed, index, current_rules, carry_rules, queen):
             steps.append("challenge and play")
             cursor += challenge + play
@@ -87,7 +91,8 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
         # Excluding play as a step, challenging is the next highest cost action.  We want to prefer it when possible, but only
         # if it won't put us past the last play attempt.
         elif index - cursor - reserve >= challenge \
-                and not can_adopt(seed[cursor]):
+                and not can_adopt(seed[cursor]) \
+                and can_mix(seed[cursor+1]):
             steps.append("challenge and decline")
             cursor += challenge
 
@@ -100,6 +105,7 @@ def calculate_steps(seed, index, start, current_rules, carry_rules, queen, q_cha
     # Technically, this needs to happen twice and the algorithm avoids all adoption steps, so this should always be safe
     # when starting from Seed 1.
     if can_adopt(seed[cursor]) \
+            or not can_mix(seed[cursor+1]) \
             or index - cursor != reserve:
         steps.append("(challenge and play)")
     else:
